@@ -29,7 +29,7 @@ module "vpc" {
 
 module "webserver_cluster" {
 	source = "github.com/gmaentz/terraform/modules/services/webserver-cluster"
-  cluster_name		= "webserver-prod"
+  cluster_name		= "aws_webserver_cluster"
   ami             = "ami-8c122be9"
   key_name        = "AWSOhio"
 	instance_type		= "t2.micro"
