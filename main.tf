@@ -1,53 +1,45 @@
-#### AWS Fleet ####
-#Connect to AWS
 provider "aws" {
-  region = "us-west-2"
+  region = "us-east-2"
 }
 
-#Build out my VPC
 module "vpc" {
-  source  = "terraform-aws-modules/vpc/aws"
-  version = "1.37.0"
+  source = "terraform-aws-modules/vpc/aws"
 
-  name = "dev"
+  name = "prod"
 
-  cidr = "10.0.0.0/16"
+  cidr = "10.5.0.0/16"
 
-  azs             = ["us-west-2a", "us-west-2b", "us-west-2c"]
-  private_subnets = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
-  public_subnets  = ["10.0.101.0/24", "10.0.102.0/24", "10.0.103.0/24"]
-  database_subnets = ["10.0.201.0/24", "10.0.202.0/24"]
+  azs             = ["us-east-2a", "us-east-2b", "us-east-2c"]
+  private_subnets = ["10.5.1.0/24", "10.5.2.0/24", "10.5.3.0/24"]
+  public_subnets  = ["10.5.101.0/24", "10.5.102.0/24", "10.5.103.0/24"]
+  database_subnets = ["10.5.201.0/24", "10.5.202.0/24"]
 
   enable_nat_gateway = true
   single_nat_gateway = true
 
   tags = {
     Owner       = "user"
-    Environment = "dev"
+    Environment = "prod"
   }
 
   vpc_tags = {
-    Name = "dev-environment"
+    Name = "prod-environment"
   }
 }
 
-#Deploy the Fleet
-module "aws_webserver_cluster" {
-  source = "github.com/gmaentz/terraform/modules/services/webserver-cluster"
-  cluster_name = "webserver-dev"
-  ami = "ami-a9d09ed1"
-  key_name = "MyOregonSSH"
-  instance_type = "t2.micro"
-  min_size = 10
-  max_size = 20
-  vpc_id = "${module.vpc.vpc_id}"
+module "webserver_cluster" {
+	source = "github.com/gmaentz/terraform/modules/services/webserver-cluster"
+  cluster_name		= "webserver-prod"
+  ami             = "ami-8c122be9"
+  key_name        = "AWSOhio"
+	instance_type		= "t2.micro"
+	min_size			= 8
+	max_size			= 10
+
+  vpc_id     = "${module.vpc.vpc_id}"
   subnet_ids = ["${module.vpc.public_subnets}"]
 }
-module "cloud_watch" {
-  source = "github.com/gmaentz/terraform/modules/services/cloud-watch"
-  sms_number = "${var.sms_number}"
-  autoscaling_group = "${module.aws_webserver_cluster.asg_name}"
-}
+
 
 #### Azure Fleet ####
 # Connect to Azure
